@@ -7,7 +7,7 @@ import shutils
 zs = np.linspace(-2*math.pi, 2*math.pi, 100)
 shutil.rmtree('../res_temp', ignore_errors=True)
 os.mkdir('../res_temp')
-with open('si.txt', 'r') as si:
+with open('../si.txt', 'r') as si:
     for z in zs:
         target = si.readline().replace('\n','')
         subprocess.Popen([
