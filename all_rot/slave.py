@@ -11,6 +11,7 @@ except Exception as e:
 @click.command()
 @click.option('-z')
 def run(z):
+    z = float(z)
     params = locals()
     # load mesh object and resize it
     mesh = trimesh.load_mesh("../models/ionsat.stl")
