@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from pathlib import Path
 import math
-a = Path('/home/titus/res')
+a = Path('../res')
 Z_temp = []
 for b in a.iterdir():
     with open(b, 'r') as f:
