@@ -36,12 +36,12 @@ def run(z):
             if r >= 2*math.pi:
                 continue
             angle = r
-            dir = np.array(x,y,z)
+            dir = np.array((x,y,z))
             dir /= np.linalg.norm(dir)
             sat_Q.append(loas.utils.Quaternion(math.cos(angle/2), *(math.sin(angle/2)*dir)))
             mask[ix,iy] = len(sat_Q)-1
     res = drag.runSim(
-        sat_W = loas.utils.tov(float(w),0,0),
+        sat_W = loas.utils.tov(0,0,0),
         sat_Q = sat_Q,
         sat_speed = 7000,
         sat_temp = 300,
@@ -52,12 +52,15 @@ def run(z):
     )
     drag.stop()
 
-    reconstructed_res = np.zeros((100,100))
+    reconstructed_res = []
     for i in range(100):
+        reconstructed_res.append([])
         for j in range(100):
-            index = mask[i,j]
+            index = int(mask[i,j])
             if index != -1:
-                reconstructed_res[i,j] = res[index]
+                reconstructed_res[-1].append(res[index])
+            else:
+                reconstructed_res[-1].append(None)
 
     with open('../res_temp/'+str(z), 'w') as f:
         f.write(str(reconstructed_res))
