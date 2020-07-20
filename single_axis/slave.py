@@ -1,9 +1,9 @@
 try:
     import click
     import trimesh
-    import numpy as np
     import loas
     import math
+    import numpy as np
 except Exception as e:
     import socket
     print(socket.gethostname(), ':', e)
@@ -11,19 +11,16 @@ except Exception as e:
 @click.command()
 @click.option('-w')
 def run(w):
-    params = locals()
-    # load mesh object and resize it
     mesh = trimesh.load_mesh("../models/ionsat.stl")
-    bounds = np.array(mesh.bounds)
-    mesh.apply_translation(-(bounds[0] + bounds[1])/2) # center the satellite (the mass center should be on 0,0)
+    mesh.apply_translation(-(mesh.bounds[0] + mesh.bounds[1])/2) # center the satellite (the mass center should be on 0,0)
+    sat_Q = [loas.utils.Quaternion(math.cos(angle/2), math.sin(angle/2), 0, 0) for angle in np.linspace(0, 2*math.pi, 100)]
     drag = loas.rad.RAD(
         sat_mesh = mesh,
         model = loas.rad.models.maxwell(0.10),
-        part_per_iteration = 1e4,
+        part_per_iteration = 1e5,
         nb_workers = 8
     )
     drag.start()
-    sat_Q = [loas.utils.Quaternion(math.cos(angle/2), math.sin(angle/2), 0, 0) for angle in np.linspace(0, 2*math.pi, 100)]
     res = drag.runSim(
         sat_W = loas.utils.tov(float(w),0,0),
         sat_Q = sat_Q,
