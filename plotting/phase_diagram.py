@@ -6,13 +6,16 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from pathlib import Path
 import math
-a = Path('../res')
+a = Path('../res/4')
 Z_temp = []
 for b in a.iterdir():
     with open(b, 'r') as f:
         rot_speed = float(b.name)
         temp =array(eval(''.join(f.readlines())))
-        z = [float(k[1][0]) for k in temp]
+        try:
+            z = [float(k[1][0]) for k in temp]
+        except Exception as e:
+            print(e, temp)
         Z_temp.append([rot_speed, z])
 
 Z_temp.sort()
@@ -43,7 +46,7 @@ def sim_trajectory(a0, da0, dt, n):
     Xs = np.array(Xs)
     return Xs[:,0],Xs[:,1]
 
-def plot_trajectory(A,DA, period=2*math.pi, color='red'):
+def plot_trajectory(A,DA, period=2*math.pi):
     A_coll = [[A[0]]]
     DA_coll = [[DA[0]]]
     for i in range(1, len(A)):
@@ -72,5 +75,6 @@ def plot_trajectory(A,DA, period=2*math.pi, color='red'):
         else:
             A_coll[-1].append(A[i]%period)
             DA_coll[-1].append(DA[i])
+    plt.scatter(A_coll[0][0], DA_coll[0][0], color='blue')
     for i in range(len(A_coll)):
-        plt.plot(A_coll[i], DA_coll[i], color=color)
+        plt.plot(A_coll[i], DA_coll[i], color='red')
