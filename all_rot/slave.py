@@ -20,7 +20,7 @@ def run(z):
     drag = loas.rad.RAD(
         sat_mesh = mesh,
         model = loas.rad.models.maxwell(0.10),
-        part_per_iteration = 1e4,
+        part_per_iteration = 1e5,
         nb_workers = 8
     )
     drag.start()
