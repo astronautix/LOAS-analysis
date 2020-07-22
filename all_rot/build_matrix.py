@@ -24,7 +24,7 @@ def build_matrix(src_folder, dest_folder):
             x = float(file.name)
             temp = list(eval(''.join(f.readlines())))
             for iy in range(len(temp)):
-                for iz in range(len(temp[i])):
+                for iz in range(len(temp[iy])):
                     if temp[iy][iz] is None:
                         temp[iy][iz] = (0,0,0)
                     else:
