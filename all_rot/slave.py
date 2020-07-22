@@ -40,7 +40,6 @@ def run(z):
             dir /= np.linalg.norm(dir)
             sat_Q.append(loas.utils.Quaternion(math.cos(angle/2), *(math.sin(angle/2)*dir)))
             mask[ix,iy] = len(sat_Q)-1
-    print(mask)
     res = drag.runSim(
         sat_W = loas.utils.tov(0,0,0),
         sat_Q = sat_Q,
