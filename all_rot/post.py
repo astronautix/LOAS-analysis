@@ -101,10 +101,10 @@ def animate_traj(traj):
         )
         for itri, triangle in enumerate(mesh.triangles)
     ])
-    axe_x_s = vp.arrow(pos=vp.vector(0, 0, 0), axis=vp.vector(1, 0, 0), shaftwidth=0.01, color=vp.vector(1, 0, 0))
-    axe_y_s = vp.arrow(pos=vp.vector(0, 0, 0), axis=vp.vector(0, 1, 0), shaftwidth=0.01, color=vp.vector(0, 1, 0))
-    axe_z_s = vp.arrow(pos=vp.vector(0, 0, 0), axis=vp.vector(0, 0, 1), shaftwidth=0.01, color=vp.vector(0, 0, 1))
-    satellite = vp.compound([axe_x_s, axe_y_s, axe_z_s, satellite]) # add frame to the satellite
+    satellite = vp.compound([satellite, *[
+        vp.arrow(pos=vp.vector(0, 0, 0), axis=axis, shaftwidth=0.01, color=axis)
+        for axis in (vp.vector(1,0,0), vp.vector(0,1,0), vp.vector(0,0,1))
+    ]]) # add frame to the satellite
     wind = vp.arrow(pos=vp.vector(0, 0, 3), axis=vp.vector(0, 0, -1), shaftwidth=0.01, color=vp.vector(1, 1, 1))
     prevQ = None
     for Q in traj:
