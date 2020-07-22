@@ -33,13 +33,17 @@ def run(x):
     for iy, y in enumerate(Y):
         for iz, z in enumerate(Z):
             r = math.sqrt(x**2+y**2+z**2)
-            if r >= 2*math.pi or r < 1e-6:
+            if r >= 2*math.pi:
                 continue
-            angle = r
-            dir = np.array((x,y,z))
-            dir /= np.linalg.norm(dir)
-            sat_Q.append(loas.utils.Quaternion(math.cos(angle/2), *(math.sin(angle/2)*dir)))
+            elif r < 1e-6:
+                sat_Q.append(loas.utils.Quaternion(1,0,0,0))
+            else:
+                angle = r
+                dir = np.array((x,y,z))
+                dir /= np.linalg.norm(dir)
+                sat_Q.append(loas.utils.Quaternion(math.cos(angle/2), *(math.sin(angle/2)*dir)))
             mask[iy,iz] = len(sat_Q)-1 #mask[ix,iy] contains the future index of the res that have to go in ix, iy
+            
     res = drag.runSim(
         sat_W = loas.utils.tov(0,0,0),
         sat_Q = sat_Q,
