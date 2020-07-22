@@ -62,7 +62,7 @@ def run(x):
             else:
                 reconstructed_res[-1].append(None)
 
-    with open('res_temp/'+str(z), 'w') as f:
+    with open('res_temp/'+str(x), 'w') as f:
         f.write(str(reconstructed_res))
 
 try:
