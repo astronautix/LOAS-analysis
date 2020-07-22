@@ -56,7 +56,7 @@ def run(x):
     for iy in range(len(Y)):
         reconstructed_res.append([])
         for iz in range(len(Z)):
-            index = int(mask[ix,iz])
+            index = int(mask[iy,iz])
             if index != -1:
                 reconstructed_res[-1].append(res[index])
             else:
