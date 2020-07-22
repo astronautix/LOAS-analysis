@@ -20,15 +20,15 @@ def run(z):
     drag = loas.rad.RAD(
         sat_mesh = mesh,
         model = loas.rad.models.maxwell(0.10),
-        part_per_iteration = 1e5,
+        part_per_iteration = 1e4,
         nb_workers = 8
     )
     drag.start()
 
-    X = np.linspace(-2*math.pi, 2*math.pi, 100)
-    Y = np.linspace(-2*math.pi, 2*math.pi, 100)
+    X = np.linspace(-2*math.pi, 2*math.pi, 10)
+    Y = np.linspace(-2*math.pi, 2*math.pi, 10)
     sat_Q = []
-    mask = -np.ones((100,100))
+    mask = -np.ones((len(X),len(Y)))
 
     for ix, x in enumerate(X):
         for iy, y in enumerate(Y):
@@ -40,6 +40,7 @@ def run(z):
             dir /= np.linalg.norm(dir)
             sat_Q.append(loas.utils.Quaternion(math.cos(angle/2), *(math.sin(angle/2)*dir)))
             mask[ix,iy] = len(sat_Q)-1
+    print(mask)
     res = drag.runSim(
         sat_W = loas.utils.tov(0,0,0),
         sat_Q = sat_Q,
@@ -53,16 +54,16 @@ def run(z):
     drag.stop()
 
     reconstructed_res = []
-    for i in range(100):
+    for i in range(len(X)):
         reconstructed_res.append([])
-        for j in range(100):
+        for j in range(len(Y)):
             index = int(mask[i,j])
             if index != -1:
                 reconstructed_res[-1].append(res[index])
             else:
                 reconstructed_res[-1].append(None)
 
-    with open('../res_temp/'+str(z), 'w') as f:
+    with open('res_temp/'+str(z), 'w') as f:
         f.write(str(reconstructed_res))
 
 try:
