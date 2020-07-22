@@ -80,9 +80,7 @@ def plot_all_traj():
                     b = loas.utils.tov(*traj[i])
                     c = loas.utils.tov(*traj[i+1])
                     normal = loas.utils.cross(c-b, a-b)
-                    normal_norm = np.linalg.norm(normal)
-                    if normal_norm>1e-6:
-                        normals.append(loas.utils.tol(normal))
+                    normals.append(loas.utils.tol(normal))
                 plt.plot(*np.transpose(np.array(normals)))
                 #plt.plot(*np.transpose(np.array(traj)))
                 print(x,y,z)
