@@ -21,15 +21,15 @@ def build_matrix(src_folder, dest_folder):
     for file in files:
         bar.next()
         with open(file, 'r') as f:
-            z = float(file.name)
+            x = float(file.name)
             temp = list(eval(''.join(f.readlines())))
-            for i in range(len(temp)):
-                for j in range(len(temp[i])):
-                    if temp[i][j] is None:
-                        temp[i][j] = (0,0,0)
+            for iy in range(len(temp)):
+                for iz in range(len(temp[i])):
+                    if temp[iy][iz] is None:
+                        temp[iy][iz] = (0,0,0)
                     else:
-                        temp[i][j] = temp[i][j][1][:,0]
-            C.append((z,temp))
+                        temp[iy][iz] = temp[iy][iz][1][:,0]
+            C.append((x,temp))
     C.sort()
 
     #purge sorting index

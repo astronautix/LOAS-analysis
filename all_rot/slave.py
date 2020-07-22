@@ -9,9 +9,9 @@ except Exception as e:
     print(socket.gethostname(), ':', e)
 
 @click.command()
-@click.option('-z')
-def run(z):
-    z = float(z)
+@click.option('-x')
+def run(x):
+    x = float(x)
     params = locals()
     # load mesh object and resize it
     mesh = trimesh.load_mesh("../models/ionsat.stl")
@@ -25,13 +25,13 @@ def run(z):
     )
     drag.start()
 
-    X = np.linspace(-2*math.pi, 2*math.pi, 10)
     Y = np.linspace(-2*math.pi, 2*math.pi, 10)
+    Z = np.linspace(-2*math.pi, 2*math.pi, 10)
     sat_Q = []
-    mask = -np.ones((len(X),len(Y)))
+    mask = -np.ones((len(Y),len(Z)))
 
-    for ix, x in enumerate(X):
-        for iy, y in enumerate(Y):
+    for iy, y in enumerate(Y):
+        for iz, z in enumerate(Z):
             r = math.sqrt(x**2+y**2+z**2)
             if r >= 2*math.pi:
                 continue
@@ -39,7 +39,7 @@ def run(z):
             dir = np.array((x,y,z))
             dir /= np.linalg.norm(dir)
             sat_Q.append(loas.utils.Quaternion(math.cos(angle/2), *(math.sin(angle/2)*dir)))
-            mask[ix,iy] = len(sat_Q)-1
+            mask[iy,iz] = len(sat_Q)-1 #mask[ix,iy] contains the future index of the res that have to go in ix, iy
     res = drag.runSim(
         sat_W = loas.utils.tov(0,0,0),
         sat_Q = sat_Q,
@@ -53,10 +53,10 @@ def run(z):
     drag.stop()
 
     reconstructed_res = []
-    for i in range(len(X)):
+    for iy in range(len(Y)):
         reconstructed_res.append([])
-        for j in range(len(Y)):
-            index = int(mask[i,j])
+        for iz in range(len(Z)):
+            index = int(mask[ix,iz])
             if index != -1:
                 reconstructed_res[-1].append(res[index])
             else:
