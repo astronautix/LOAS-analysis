@@ -33,7 +33,7 @@ def run(x):
     for iy, y in enumerate(Y):
         for iz, z in enumerate(Z):
             r = math.sqrt(x**2+y**2+z**2)
-            if r >= 2*math.pi:
+            if r >= 2*math.pi or r < 1e-6:
                 continue
             angle = r
             dir = np.array((x,y,z))
