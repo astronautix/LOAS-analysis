@@ -106,7 +106,6 @@ def animate_traj(traj):
     axe_z_s = vp.arrow(pos=vp.vector(0, 0, 0), axis=vp.vector(0, 0, 1), shaftwidth=0.01, color=vp.vector(0, 0, 1))
     satellite = vp.compound([axe_x_s, axe_y_s, axe_z_s, satellite]) # add frame to the satellite
     wind = vp.arrow(pos=vp.vector(0, 0, 3), axis=vp.vector(0, 0, -1), shaftwidth=0.01, color=vp.vector(1, 1, 1))
-    """
     prevQ = None
     for Q in traj:
         if prevQ is not None:
@@ -122,4 +121,3 @@ def animate_traj(traj):
         )
         prevQ = Q
         vp.rate(25)
-    """
