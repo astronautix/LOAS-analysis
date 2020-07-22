@@ -11,7 +11,7 @@ import math
 import trimesh
 
 Cmat = np.load('res/1/all_rot_mat.npy')
-sigma = 2
+sigma = 0
 
 def smooth_interpolate(Cmat, X, Y, Z, sigma, dim):
     return scipy.interpolate.RegularGridInterpolator(
@@ -55,7 +55,7 @@ def sim_traj(Q0, L0, dt, n):
     L = L0
     trajectory = []
     for i in range(n):
-        L += C(Q)*dt #calcul du nouveau moment cinétique
+        L += Q.V2R(C(Q))*dt #calcul du nouveau moment cinétique
         Qnump = Q.vec() + Q.derivative(W(Q,L,I))*dt #calcul de la nouvelle orientation
         Qnump /= np.linalg.norm(Qnump)
         Q = loas.utils.Quaternion(*Qnump[:,0])
