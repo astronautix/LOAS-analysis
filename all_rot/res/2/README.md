@@ -1,0 +1,3 @@
+ionsat
+1e5 particules
+101 pts faits de -2*math.pi à 2*math.pi sur les axes en cartésien...
