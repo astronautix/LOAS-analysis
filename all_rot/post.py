@@ -10,7 +10,7 @@ from progress.bar import Bar
 import math
 import trimesh
 
-Cmat = np.load('res/1/all_rot_mat.npy')
+Cmat = np.load('res/2/all_rot_mat.npy')
 sigma = 0
 
 def smooth_interpolate(Cmat, X, Y, Z, sigma, dim):
@@ -19,9 +19,9 @@ def smooth_interpolate(Cmat, X, Y, Z, sigma, dim):
         scipy.ndimage.gaussian_filter(Cmat[:,:,:,dim],sigma)
     )
 
-X = np.linspace(-2*math.pi,2*math.pi,100)
-Y = np.linspace(-2*math.pi,2*math.pi,100)
-Z = np.linspace(-2*math.pi,2*math.pi,100)
+X = np.linspace(-math.pi,math.pi,Cmat.shape[0])
+Y = np.linspace(-math.pi,math.pi,Cmat.shape[1])
+Z = np.linspace(-math.pi,math.pi,Cmat.shape[2])
 
 Cxi = smooth_interpolate(Cmat, X, Y, Z, sigma, 0)
 Cyi = smooth_interpolate(Cmat, X, Y, Z, sigma, 1)
@@ -50,12 +50,12 @@ def W(Q, L, I):
     return Q.V2R(np.linalg.inv(I) @ Q.R2V(L))
 
 def sim_traj(Q0, L0, dt, n):
-    I = 1e4*np.eye(3)
+    I = np.eye(3)
     Q = Q0
     L = L0
     trajectory = []
     for i in range(n):
-        L += Q.V2R(C(Q))*dt #calcul du nouveau moment cinétique
+        L += (Q.V2R(C(Q)))*dt #calcul du nouveau moment cinétique
         Qnump = Q.vec() + Q.derivative(W(Q,L,I))*dt #calcul de la nouvelle orientation
         Qnump /= np.linalg.norm(Qnump)
         Q = loas.utils.Quaternion(*Qnump[:,0])
@@ -64,15 +64,15 @@ def sim_traj(Q0, L0, dt, n):
 
 def plot_all_traj():
     plt.figure().add_subplot(111, projection='3d')
-    for z in np.linspace(-2*math.pi,2*math.pi,10):
-        for y in np.linspace(-2*math.pi,2*math.pi,10):
-            for x in np.linspace(-2*math.pi,2*math.pi,10):
-                if x**2+y**2+z**2 > (2*math.pi)**2:
+    for z in (0,): #np.linspace(-2*math.pi,2*math.pi,10):
+        for y in np.linspace(-math.pi,math.pi,10):
+            for x in np.linspace(-math.pi,math.pi,10):
+                if x**2+y**2+z**2 > (math.pi)**2:
                     continue
                 Q0 = c2q(x,y,z)
                 traj = [
                     loas.utils.tol(Q.R2V(loas.utils.tov(0,0,1)))
-                    for Q in sim_traj(Q0,loas.utils.tov(0,0,0),100,500)
+                    for Q in sim_traj(Q0,loas.utils.tov(0,0,0),2000,1000)
                 ]
                 normals = []
                 for i in range(1,len(traj)-1):

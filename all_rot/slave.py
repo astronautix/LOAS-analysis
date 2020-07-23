@@ -25,15 +25,15 @@ def run(x):
     )
     drag.start()
 
-    Y = np.linspace(-2*math.pi, 2*math.pi, 10)
-    Z = np.linspace(-2*math.pi, 2*math.pi, 10)
+    Y = np.linspace(-math.pi, math.pi, 41)
+    Z = np.linspace(-math.pi, math.pi, 41)
     sat_Q = []
     mask = -np.ones((len(Y),len(Z)))
 
     for iy, y in enumerate(Y):
         for iz, z in enumerate(Z):
             r = math.sqrt(x**2+y**2+z**2)
-            if r >= 2*math.pi:
+            if r > math.pi:
                 continue
             elif r < 1e-6:
                 sat_Q.append(loas.utils.Quaternion(1,0,0,0))
@@ -43,7 +43,7 @@ def run(x):
                 dir /= np.linalg.norm(dir)
                 sat_Q.append(loas.utils.Quaternion(math.cos(angle/2), *(math.sin(angle/2)*dir)))
             mask[iy,iz] = len(sat_Q)-1 #mask[ix,iy] contains the future index of the res that have to go in ix, iy
-            
+
     res = drag.runSim(
         sat_W = loas.utils.tov(0,0,0),
         sat_Q = sat_Q,
