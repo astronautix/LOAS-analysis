@@ -15,6 +15,11 @@ with open('../si.txt', 'r') as si:
             'ssh',
             '-oStrictHostKeyChecking=no',
             'titus.senez@{}.polytechnique.fr'.format(target),
-            'killall -q python; cd {}; source {}/bin/activate; nohup python slave.py -x {}'.format(os.environ['PWD'], os.environ['VIRTUAL_ENV'], x)
+            'killall -u {} -q python; cd {}; source {}/bin/activate; nohup python slave.py -x {}'.format(
+                os.environ['USER'],
+                os.environ['PWD'],
+                os.environ['VIRTUAL_ENV'],
+                x
+            )
         ], stdout=sys.stdout, stderr=sys.stderr)
         print(target, x)
