@@ -5,46 +5,28 @@ from numpy import array
 import scipy.ndimage
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 from pathlib import Path
 from progress.bar import Bar
 import math
 import trimesh
+from utils import *
 
-Cmat = np.load('res/3/all_rot_mat.npy')
 sigma = 0
+res_folder = '/home/titus/res_temp'
 
-def smooth_interpolate(Cmat, X, Y, Z, sigma, dim):
-    return scipy.interpolate.RegularGridInterpolator(
-        (X,Y,Z),
-        scipy.ndimage.gaussian_filter(Cmat[:,:,:,dim],sigma)
-    )
+Ps = np.load(res_folder + '/P.npy')
+Ts = np.load(res_folder + '/T.npy')
+Cmat = np.load(res_folder + '/C.npy')
 
-X = np.linspace(-math.pi,math.pi,Cmat.shape[0])
-Y = np.linspace(-math.pi,math.pi,Cmat.shape[1])
-Z = np.linspace(-math.pi,math.pi,Cmat.shape[2])
-
-Cxi = smooth_interpolate(Cmat, X, Y, Z, sigma, 0)
-Cyi = smooth_interpolate(Cmat, X, Y, Z, sigma, 1)
-Czi = smooth_interpolate(Cmat, X, Y, Z, sigma, 2)
+Cx = interpolate(Ts, Ps, Cmat[:,0,0], 0.1)
+Cy = interpolate(Ts, Ps, Cmat[:,1,0], 0.1)
+Cz = interpolate(Ts, Ps, Cmat[:,2,0], 0.1)
 
 def C(Q):
-    x,z,y = q2c(Q)
-    return loas.utils.tov(
-        float(Cxi((x,y,z))),
-        float(Cyi((x,y,z))),
-        float(Czi((x,y,z)))
-    )
-
-def c2q(x,y,z):
-    angle = math.sqrt(x**2+y**2+z**2)
-    dir = np.array((x,y,z))
-    dir /= np.linalg.norm(dir)
-    return loas.utils.Quaternion(math.cos(angle/2), *(math.sin(angle/2)*dir))
-
-def q2c(Q):
-    angle = Q.angle()
-    dir = Q.axis()
-    return tuple((angle*dir)[:,0])
+    t,p = v2c(q2v(Q))
+    C_sat = loas.utils.tov(Cx(t,p), Cy(t,p), Cz(t,p))
+    return Q.V2R(C_sat)
 
 def W(Q, L, I):
     return Q.V2R(np.linalg.inv(I) @ Q.R2V(L))
@@ -119,3 +101,26 @@ def animate_traj(traj):
         )
         prevQ = Q
         vp.rate(25)
+
+
+def plot(C):
+    fig = plt.figure()
+    ax = fig.add_subplot( 1, 1, 1, projection='3d')
+
+    PP = np.linspace( 0, 2 * np.pi, 120)
+    TT = np.linspace( 0, np.pi, 60 )
+
+    # create the sphere surface
+    XX = np.outer(np.cos(PP), np.sin(TT))
+    YY = np.outer( np.sin( PP ), np.sin( TT ) )
+    ZZ = np.outer( np.ones( np.size( PP ) ), np.cos( TT ) )
+
+    WW = XX.copy()
+    for i,p in enumerate(PP):
+        for j,t in enumerate(TT):
+            WW[i,j] = C(t,p)
+    WW -= np.amin(WW)
+    WW = WW / np.amax( WW )
+    myheatmap = WW
+    ax.plot_surface( XX, YY,  ZZ, cstride=1, rstride=1, facecolors=cm.jet( myheatmap ) )
+    plt.show()
