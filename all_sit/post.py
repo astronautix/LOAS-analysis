@@ -37,7 +37,7 @@ def sim_traj(Q0, L0, dt, n):
     L = L0
     trajectory = []
     for i in range(n):
-        L += C(Q)*dt #calcul du nouveau moment cinétique
+        L += (C(Q)-3e-5*W(Q,L,I))*dt #calcul du nouveau moment cinétique
         Qnump = Q.vec() + Q.derivative(W(Q,L,I))*dt #calcul de la nouvelle orientation
         Qnump /= np.linalg.norm(Qnump)
         Q = loas.utils.Quaternion(*Qnump[:,0])
@@ -45,30 +45,26 @@ def sim_traj(Q0, L0, dt, n):
     return trajectory
 
 def plot_all_traj():
-    plt.figure().add_subplot(111, projection='3d')
-    for z in (0,): #np.linspace(-2*math.pi,2*math.pi,10):
-        for y in np.linspace(-math.pi,math.pi,10):
-            for x in np.linspace(-math.pi,math.pi,10):
-                if x**2+y**2+z**2 > (math.pi)**2:
-                    continue
-                Q0 = c2q(x,y,z)
-                traj = [
-                    loas.utils.tol(Q.R2V(loas.utils.tov(0,0,1)))
-                    for Q in sim_traj(Q0,loas.utils.tov(0,0,0),2000,1000)
-                ]
-                normals = []
-                for i in range(1,len(traj)-1):
-                    a = loas.utils.tov(*traj[i-1])
-                    b = loas.utils.tov(*traj[i])
-                    c = loas.utils.tov(*traj[i+1])
-                    normal = loas.utils.cross(c-b, a-b)
-                    normals.append(loas.utils.tol(normal))
-                plt.plot(*np.transpose(np.array(normals)))
-                #plt.plot(*np.transpose(np.array(traj)))
-                print(x,y,z)
+    ax = plt.figure().gca(projection='3d')
+    for p in np.linspace(0,2*math.pi,10)[:-1]:
+        for t in np.linspace(0,math.pi,10)[:-1]:
+            Q0 = v2q(c2v(t,p))
+            traj = [q2v(Q) for Q in sim_traj(Q0,loas.utils.tov(0,0,0),50,1000)]
+            normals = []
+            for i in range(1,len(traj)-1):
+                normal = loas.utils.cross(traj[i+1]-traj[i], traj[i-1]-traj[i])
+                normals.append(loas.utils.tol(normal))
+            normals = np.array(normals)
+            ax.plot(*np.transpose(np.array(normals)), label=str(p)+","+str(t))
+            #plt.plot(*np.transpose(np.array(traj)))
+            print(p,t)
+    ax.auto_scale_xyz(*[[np.min(normals), np.max(normals)]]*3)
+    plt.legend()
+    plt.show()
+
 
 def animate_traj(traj):
-    mesh = trimesh.load_mesh('../models/satellite.stl')
+    mesh = trimesh.load_mesh('../models/ionsat.stl')
     bounds = np.array(mesh.bounds)
     mesh.apply_translation(-(bounds[0] + bounds[1])/2)
     mesh.apply_scale(2)
