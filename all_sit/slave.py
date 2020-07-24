@@ -1,6 +1,7 @@
 import loas
 import math
 import numpy as np
+import trimesh
 from utils import *
 
 def get_grid(num_pts):
@@ -9,7 +10,7 @@ def get_grid(num_pts):
     phis = (math.pi * (1 + 5**0.5) * indices)%(2*math.pi)
     return thetas, phis
 
-Ts, Ps = get_grid(300)
+Ts, Ps = get_grid(500)
 
 Qs = [v2q(c2v(t,p)) for t,p in np.transpose([Ts,Ps])]
 mesh = trimesh.load_mesh("../models/satellite.stl")
@@ -17,12 +18,12 @@ mesh.apply_translation(-(mesh.bounds[0] + mesh.bounds[1])/2) # center the satell
 drag = loas.rad.RAD(
     sat_mesh = mesh,
     model = loas.rad.models.maxwell(0.10),
-    part_per_iteration = 1e4,
+    part_per_iteration = 1e5,
     nb_workers = 8
 )
 drag.start()
-res = drag.runSim(
-    sat_W = loas.utils.tov(float(w),0,0),
+res = drag.runSim
+    sat_W = loas.utils.tov(0,0,0),
     sat_Q = Qs,
     sat_speed = 7000,
     sat_temp = 300,
