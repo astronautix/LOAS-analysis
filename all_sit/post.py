@@ -12,6 +12,9 @@ import math
 import trimesh
 from utils import *
 
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
+
 sigma = 0
 res_folder = '/home/titus/res_temp'
 
@@ -19,14 +22,11 @@ Ps = np.load(res_folder + '/P.npy')
 Ts = np.load(res_folder + '/T.npy')
 Cmat = np.load(res_folder + '/C.npy')
 
-Cx = interpolate(Ts, Ps, Cmat[:,0,0], 0.1)
-Cy = interpolate(Ts, Ps, Cmat[:,1,0], 0.1)
-Cz = interpolate(Ts, Ps, Cmat[:,2,0], 0.1)
+C_interp = interpolate(Ts, Ps, Cmat, 0.1)
 
 def C(Q):
     t,p = v2c(q2v(Q))
-    C_sat = loas.utils.tov(Cx(t,p), Cy(t,p), Cz(t,p))
-    return Q.V2R(C_sat)
+    return Q.V2R(C_interp(t,p))
 
 def W(Q, L, I):
     return Q.V2R(np.linalg.inv(I) @ Q.R2V(L))
@@ -44,24 +44,42 @@ def sim_traj(Q0, L0, dt, n):
         trajectory.append(Q)
     return trajectory
 
-def plot_all_traj():
+def plot_all_traj_normals():
+    dt = 50
     ax = plt.figure().gca(projection='3d')
     for p in np.linspace(0,2*math.pi,10)[:-1]:
         for t in np.linspace(0,math.pi,10)[:-1]:
             Q0 = v2q(c2v(t,p))
-            traj = [q2v(Q) for Q in sim_traj(Q0,loas.utils.tov(0,0,0),50,1000)]
+            traj = [q2v(Q) for Q in sim_traj(Q0,loas.utils.tov(0,0,0),dt,1000)]
             normals = []
             for i in range(1,len(traj)-1):
-                normal = loas.utils.cross(traj[i+1]-traj[i], traj[i-1]-traj[i])
+                normal = loas.utils.cross(traj[i+1]-traj[i], traj[i-1]-traj[i])/dt**2
                 normals.append(loas.utils.tol(normal))
             normals = np.array(normals)
-            ax.plot(*np.transpose(np.array(normals)), label=str(p)+","+str(t))
+            ax.plot(*np.transpose(np.array(normals)), color='red')
             #plt.plot(*np.transpose(np.array(traj)))
             print(p,t)
     ax.auto_scale_xyz(*[[np.min(normals), np.max(normals)]]*3)
     plt.legend()
     plt.show()
 
+def change_labels(ax):
+    ax.set_xticklabels(np.vectorize(int)(np.linspace(0,360,13)[1:-1])) #python3 code to create 90 tick marks
+    ax.set_yticklabels(np.vectorize(int)(np.linspace(180,0,13)[1:-1])) #python3 code to create 90 tick marks
+
+def plot_all_traj():
+    plt.figure()
+    ax = plt.subplot(111, projection='aitoff')
+    change_labels(ax)
+    for p in np.linspace(0,2*math.pi,4)[:-1]:
+        for t in np.linspace(0,math.pi,4)[:-1]:
+            Q0 = v2q(c2v(t,p))
+            traj = np.array([v2c(q2v(Q)) for Q in sim_traj(Q0,loas.utils.tov(0,0,0),50,1000)])
+            plt.scatter(*v2m(t,p), color='blue')
+            plt.plot(*v2m(traj[:,0], traj[:,1]), color='red')
+            print(p,t)
+    plt.grid()
+    plt.show()
 
 def animate_traj(traj):
     mesh = trimesh.load_mesh('../models/ionsat.stl')
@@ -98,25 +116,22 @@ def animate_traj(traj):
         prevQ = Q
         vp.rate(25)
 
-
-def plot(C):
-    fig = plt.figure()
-    ax = fig.add_subplot( 1, 1, 1, projection='3d')
-
-    PP = np.linspace( 0, 2 * np.pi, 120)
-    TT = np.linspace( 0, np.pi, 60 )
-
-    # create the sphere surface
-    XX = np.outer(np.cos(PP), np.sin(TT))
-    YY = np.outer( np.sin( PP ), np.sin( TT ) )
-    ZZ = np.outer( np.ones( np.size( PP ) ), np.cos( TT ) )
-
-    WW = XX.copy()
-    for i,p in enumerate(PP):
-        for j,t in enumerate(TT):
-            WW[i,j] = C(t,p)
-    WW -= np.amin(WW)
-    WW = WW / np.amax( WW )
-    myheatmap = WW
-    ax.plot_surface( XX, YY,  ZZ, cstride=1, rstride=1, facecolors=cm.jet( myheatmap ) )
-    plt.show()
+def plot2D(pts):
+    plt.figure()
+    C_sub = np.array([
+        [
+            C_interp(i,j)
+            for i in np.linspace(math.pi, 0, pts)
+        ]
+        for j in np.linspace(0,2*math.pi,pts)
+    ])
+    X = np.linspace(-math.pi, math.pi, pts)
+    Y =  np.linspace(-math.pi/2, math.pi/2, pts)
+    X,Y = np.meshgrid(X,Y)
+    for i,name in ((0,'x'),(1,'y'),(2,'z')):
+        ax = plt.subplot(311+i, projection='aitoff')
+        change_labels(ax)
+        plt.pcolor(X,Y,C_sub[:,:,i,0])
+        plt.title('$C_{}$'.format(name))
+        plt.colorbar()
+        plt.grid()

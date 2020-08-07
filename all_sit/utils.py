@@ -4,13 +4,13 @@ import math
 
 def v2q(vec): #Q.V2R(loas.utils.tov(x,z,y)) = (0,0,1)
     assert np.linalg.norm(vec) - 1 < 1e-10
-    axis = vec + loas.utils.tov(0,0,1)
+    axis = vec + loas.utils.tov(0,0,-1)
     if np.linalg.norm(axis) < 1e-6:
         axis = loas.utils.tov(1,0,0)
     return loas.utils.Quaternion(0, *axis)
 
 def q2v(Q):
-    return Q.R2V(loas.utils.tov(0,0,1))
+    return Q.R2V(loas.utils.tov(0,0,-1))
 
 def c2v(theta, phi):
     return loas.utils.tov(
@@ -22,9 +22,12 @@ def c2v(theta, phi):
 def v2c(vec):
     assert np.linalg.norm(vec) - 1 < 1e-10
     x,y,z = loas.utils.tol(vec)
-    p = math.atan2(y,x)
+    p = math.atan2(y,x)%(2*math.pi)
     t = math.atan2(math.sqrt(x**2+y**2), z)
     return t,p
+
+def v2m(t,p):
+    return p-math.pi, -(t-math.pi/2)
 
 def distance_on_sphere(t1,p1,t2,p2):
     # https://en.wikipedia.org/wiki/Spherical_coordinate_system
