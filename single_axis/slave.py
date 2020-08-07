@@ -11,7 +11,7 @@ except Exception as e:
 @click.command()
 @click.option('-w')
 def run(w):
-    mesh = trimesh.load_mesh("../models/ionsat.stl")
+    mesh = trimesh.load_mesh("../models/crocus/45.stl")
     mesh.apply_translation(-(mesh.bounds[0] + mesh.bounds[1])/2) # center the satellite (the mass center should be on 0,0)
     sat_Q = [loas.utils.Quaternion(math.cos(angle/2), math.sin(angle/2), 0, 0) for angle in np.linspace(0, 2*math.pi, 100)]
     drag = loas.rad.RAD(
