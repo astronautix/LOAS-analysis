@@ -2,18 +2,18 @@ import loas
 import numpy as np
 import math
 
-def v2q(vec): #Q.V2R(loas.utils.tov(x,z,y)) = (0,0,1)
+def v2q(vec): #Q.V2R(loas.Vec(x,z,y)) = (0,0,1)
     assert np.linalg.norm(vec) - 1 < 1e-10
-    axis = vec + loas.utils.tov(0,0,-1)
+    axis = vec + loas.Vec(0,0,-1)
     if np.linalg.norm(axis) < 1e-6:
-        axis = loas.utils.tov(1,0,0)
-    return loas.utils.Quaternion(0, *axis)
+        axis = loas.Vec(1,0,0)
+    return loas.Quat(0, *axis)
 
 def q2v(Q):
-    return Q.R2V(loas.utils.tov(0,0,-1))
+    return Q.R2V(loas.Vec(0,0,-1))
 
 def c2v(theta, phi):
-    return loas.utils.tov(
+    return loas.Vec(
         math.sin(theta)*math.cos(phi),
         math.sin(theta)*math.sin(phi),
         math.cos(theta)
@@ -21,7 +21,7 @@ def c2v(theta, phi):
 
 def v2c(vec):
     assert np.linalg.norm(vec) - 1 < 1e-10
-    x,y,z = loas.utils.tol(vec)
+    x,y,z = vec.line()
     p = math.atan2(y,x)%(2*math.pi)
     t = math.atan2(math.sqrt(x**2+y**2), z)
     return t,p

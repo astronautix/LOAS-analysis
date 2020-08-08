@@ -40,7 +40,7 @@ def sim_traj(Q0, L0, dt, n):
         L += (C(Q)-3e-5*W(Q,L,I))*dt #calcul du nouveau moment cinétique
         Qnump = Q.vec() + Q.derivative(W(Q,L,I))*dt #calcul de la nouvelle orientation
         Qnump /= np.linalg.norm(Qnump)
-        Q = loas.utils.Quaternion(*Qnump[:,0])
+        Q = loas.Quat(*Qnump[:,0])
         trajectory.append(Q)
     return trajectory
 
@@ -50,11 +50,11 @@ def plot_all_traj_normals():
     for p in np.linspace(0,2*math.pi,10)[:-1]:
         for t in np.linspace(0,math.pi,10)[:-1]:
             Q0 = v2q(c2v(t,p))
-            traj = [q2v(Q) for Q in sim_traj(Q0,loas.utils.tov(0,0,0),dt,1000)]
+            traj = [q2v(Q) for Q in sim_traj(Q0,loas.Vec(0,0,0),dt,1000)]
             normals = []
             for i in range(1,len(traj)-1):
-                normal = loas.utils.cross(traj[i+1]-traj[i], traj[i-1]-traj[i])/dt**2
-                normals.append(loas.utils.tol(normal))
+                normal = (traj[i+1]-traj[i]).cross(traj[i-1]-traj[i])/dt**2
+                normals.append(normal.line())
             normals = np.array(normals)
             ax.plot(*np.transpose(np.array(normals)), color='red')
             #plt.plot(*np.transpose(np.array(traj)))
@@ -74,7 +74,7 @@ def plot_all_traj():
     for p in np.linspace(0,2*math.pi,4)[:-1]:
         for t in np.linspace(0,math.pi,4)[:-1]:
             Q0 = v2q(c2v(t,p))
-            traj = np.array([v2c(q2v(Q)) for Q in sim_traj(Q0,loas.utils.tov(0,0,0),50,1000)])
+            traj = np.array([v2c(q2v(Q)) for Q in sim_traj(Q0,loas.Vec(0,0,0),50,1000)])
             plt.scatter(*v2m(t,p), color='blue')
             plt.plot(*v2m(traj[:,0], traj[:,1]), color='red')
             print(p,t)
