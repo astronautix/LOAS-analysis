@@ -33,7 +33,7 @@ def run(w):
     )
     drag.stop()
 
-    with open('../res_temp/'+str(w), 'w') as f:
+    with open('res_temp/'+str(w), 'w') as f:
         f.write(str(res))
 
 try:

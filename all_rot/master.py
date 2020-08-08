@@ -6,8 +6,8 @@ import math
 import shutil
 
 xs = np.linspace(-math.pi, math.pi, 41)
-shutil.rmtree('../res_temp', ignore_errors=True)
-os.mkdir('../res_temp')
+shutil.rmtree('res_temp', ignore_errors=True)
+os.mkdir('res_temp')
 with open('../si.txt', 'r') as si:
     for x in xs:
         target = si.readline().replace('\n','')
