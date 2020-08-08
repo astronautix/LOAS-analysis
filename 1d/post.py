@@ -10,7 +10,7 @@ import math
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
-a = Path('res/3/data')
+a = Path("/home/titus/res_temp") #Path('res/3/data')
 Z_temp = []
 for b in a.iterdir():
     with open(b, 'r') as f:
