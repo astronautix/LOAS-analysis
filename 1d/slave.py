@@ -12,17 +12,18 @@ except Exception as e:
 @click.option('-w')
 def run(w):
     mesh = trimesh.load_mesh("../models/crocus/45.stl")
+    mesh.apply_scale(.01)
     mesh.apply_translation(-(mesh.bounds[0] + mesh.bounds[1])/2) # center the satellite (the mass center should be on 0,0)
-    sat_Q = [loas.utils.Quaternion(math.cos(angle/2), math.sin(angle/2), 0, 0) for angle in np.linspace(0, 2*math.pi, 100)]
-    drag = loas.rad.RAD(
+    sat_Q = [loas.Quat(math.cos(angle/2), math.sin(angle/2), 0, 0) for angle in np.linspace(0, 2*math.pi, 100)]
+    drag = loas.RAD(
         sat_mesh = mesh,
-        model = loas.rad.models.maxwell(0.10),
+        model = loas.models.maxwell(0.10),
         part_per_iteration = 1e5,
         nb_workers = 8
     )
     drag.start()
     res = drag.runSim(
-        sat_W = loas.utils.tov(float(w),0,0),
+        sat_W = loas.Vec(float(w),0,0),
         sat_Q = sat_Q,
         sat_speed = 7000,
         sat_temp = 300,

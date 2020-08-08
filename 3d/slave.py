@@ -15,15 +15,15 @@ Ts, Ps = get_grid(500)
 Qs = [v2q(c2v(t,p)) for t,p in np.transpose([Ts,Ps])]
 mesh = trimesh.load_mesh("../models/satellite.stl")
 mesh.apply_translation(-(mesh.bounds[0] + mesh.bounds[1])/2) # center the satellite (the mass center should be on 0,0)
-drag = loas.rad.RAD(
+drag = loas.RAD(
     sat_mesh = mesh,
-    model = loas.rad.models.maxwell(0.10),
+    model = loas.models.maxwell(0.10),
     part_per_iteration = 1e5,
     nb_workers = 8
 )
 drag.start()
 res = drag.runSim
-    sat_W = loas.utils.tov(0,0,0),
+    sat_W = loas.Vec(0,0,0),
     sat_Q = Qs,
     sat_speed = 7000,
     sat_temp = 300,
