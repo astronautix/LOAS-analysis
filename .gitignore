@@ -2,3 +2,4 @@ si.txt
 res_temp/
 *.npy
 __pycache__/
+res_perso/

@@ -2,30 +2,30 @@ from post import *
 import multiprocessing as mp
 import matplotlib.pyplot as plt
 
-angles =  np.linspace(0,2*math.pi,100)[1:-1]
+angles =  np.linspace(0,math.pi,50)[1:]
 
-X,Y,Z,Zf = load_res('/home/titus/res_temp', 2)
+X,Y,Z,Zf = load_res('res/5/data', 0, 3)
 
 with mp.Pool(4) as p:
     trajs = p.starmap(
         get_traj,
-        [(X,Y,Zf,a0, 0, 2.5, 20000) for a0 in angles]
+        [(X,Y,Zf,a0, 0, 0.025, 800000) for a0 in angles]
     )
 
 plt.pcolor(X,Y,Z)
-plot_traj(trajs[::10])
-plt.xlabel('Attack angle ($rad$)')
-plt.ylabel('Rotation speed ($rad.s^{-1}$)')
+plot_traj(trajs)
+plt.xlabel('Attack angle ($rad$)',fontsize=14)
+plt.ylabel('Rotation speed ($rad.s^{-1}$)',fontsize=14)
 plt.show()
 
-plt.plot(angles, delta_e(trajs))
-plt.xlabel('Attack angle ($rad$)')
-plt.ylabel('$\Delta E_m / E_m$')
+plt.plot(angles, delta_a0(trajs))
+plt.xlabel('Attack angle ($rad$)',fontsize=14)
+plt.ylabel('$\Delta E_m / E_m$',fontsize=14)
 plt.grid()
 plt.show()
 
-plt.plot(angles, delta_e(trajs))
-plt.xlabel('Attack angle ($rad$)')
-plt.ylabel('Period ($s$)')
+plt.plot(angles, period(trajs))
+plt.xlabel('Attack angle ($rad$)',fontsize=14)
+plt.ylabel('Period ($s$)',fontsize=14)
 plt.grid()
 plt.show()

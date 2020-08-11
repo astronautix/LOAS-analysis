@@ -9,7 +9,7 @@ import math
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
-def load_res(path, sigma = 3):
+def load_res(path, axis, sigma = 3):
 
     a = Path(path)
 
@@ -19,7 +19,7 @@ def load_res(path, sigma = 3):
             rot_speed = float(b.name)
             temp = np.array(eval(''.join(f.readlines()).replace('array', 'np.array').replace('Vec', 'np.array')))
             try:
-                z = [float(k[1][1]) for k in temp] #k[0] for drag, k[2] for drag coeff
+                z = [float(k[1][axis]) for k in temp] #k[0] for drag, k[2] for drag coeff
             except Exception as e:
                 print(e, temp)
             Z_temp.append([rot_speed, z])
@@ -29,7 +29,7 @@ def load_res(path, sigma = 3):
     X = np.linspace(0,2*math.pi,100)
     Y = np.array([i[0] for i in Z_temp])
     Z = np.array([i[1] for i in Z_temp])
-    Z = scipy.ndimage.gaussian_filter(Z,3) #Z smoothed
+    Z = scipy.ndimage.gaussian_filter(Z,sigma) #Z smoothed
     Zf = scipy.interpolate.interp2d(X,Y,Z) #Z function
 
     X,Y = np.meshgrid(X,Y)
@@ -109,6 +109,8 @@ def period(traj):
     return None
 
 def get_first_zero(A,offset):
+    if A[offset] == 0:
+        return offset
     for i in range(offset, len(A)-1):
         if A[i]*A[i+1] < 0:
             return i
@@ -123,13 +125,34 @@ def delta_e(traj):
     i2 = get_first_zero(A,i1+1)
     if i2 is None:
         return i2
-    if DA[i2]*DA[i1] < 0: # not a period but a semi period
+    if DA[i2+1]*DA[i1+1] < 0: # not a period but a semi period
         i2 = get_first_zero(A,i2+1) #we go to the next semi-period
         if i2 is None:
             return None
-    if DA[i2]*DA[i1] < 0: #if did not succeed
+    if DA[i2+1]*DA[i1+1] < 0: #if did not succeed
         return None
 
     DE = 1/2*(DA[i2]**2-DA[i1]**2)
     E = 1/2*DA[i1]**2
     return DE/E
+
+@np.vectorize
+def delta_a0(traj):
+    A, DA = traj.A, traj.DA
+    i1 = get_first_zero(DA,0)
+    print(1,i1)
+    if i1 is None:
+        return i1
+    i2 = get_first_zero(DA,i1+1)
+    print(2,i2)
+    if i2 is None:
+        return i2
+    if DA[i2+1]*DA[i1+1] < 0: # not a period but a semi period
+        i2 = get_first_zero(DA,i2+1) #we go to the next semi-period
+        print(3,i2)
+        if i2 is None:
+            return None
+    if DA[i2+1]*DA[i1+1] < 0: #if did not succeed
+        return None
+    Da0 = A[i2]-A[i1]
+    return Da0
