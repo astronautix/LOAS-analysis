@@ -1,5 +1,5 @@
 # 3
-Résultats de single_axis
+Résultats de single_axis avec loas < 0.4.0 (vent selon z)
 
 Avec `w` dans `np.linspace(-0.005,0.005,100)`. Chaque fichier est la sortie de `drag.runSim` pour la valeur de `w` correspondant au nom du fichier.
 ```python
