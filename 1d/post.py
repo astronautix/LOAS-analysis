@@ -1,5 +1,4 @@
 import numpy as np
-from numpy import array
 import scipy.ndimage
 import scipy.interpolate
 import matplotlib.pyplot as plt
@@ -10,40 +9,46 @@ import math
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
-a = Path("/home/titus/res_temp") #Path('res/3/data')
-Z_temp = []
-for b in a.iterdir():
-    with open(b, 'r') as f:
-        rot_speed = float(b.name)
-        temp =array(eval(''.join(f.readlines())))
-        try:
-            z = [float(k[1][0]) for k in temp] #k[0] for drag, k[2] for drag coeff
-        except Exception as e:
-            print(e, temp)
-        Z_temp.append([rot_speed, z])
+def load_res(path, sigma = 3):
 
-Z_temp.sort()
+    a = Path(path)
 
-X = np.linspace(0,2*math.pi,100)
-Y = np.array([i[0] for i in Z_temp])
-Z_raw= np.array([i[1] for i in Z_temp])
-Z = scipy.ndimage.gaussian_filter(Z_raw,3)
-Z_interpolated = scipy.interpolate.interp2d(X,Y,Z)
+    Z_temp = []
+    for b in a.iterdir():
+        with open(b, 'r') as f:
+            rot_speed = float(b.name)
+            temp = np.array(eval(''.join(f.readlines()).replace('array', 'np.array').replace('Vec', 'np.array')))
+            try:
+                z = [float(k[1][1]) for k in temp] #k[0] for drag, k[2] for drag coeff
+            except Exception as e:
+                print(e, temp)
+            Z_temp.append([rot_speed, z])
 
-f = np.zeros(Z_raw.shape)
-for i in range(f.shape[0]):
-    for j in range(f.shape[1]):
-        x = X[j]
-        y = Y[i]
-        f[i,j] = (Z_interpolated(x, y) - Z_interpolated(x, 0))/y
+    Z_temp.sort()
 
-X,Y = np.meshgrid(X,Y)
+    X = np.linspace(0,2*math.pi,100)
+    Y = np.array([i[0] for i in Z_temp])
+    Z = np.array([i[1] for i in Z_temp])
+    Z = scipy.ndimage.gaussian_filter(Z,3) #Z smoothed
+    Zf = scipy.interpolate.interp2d(X,Y,Z) #Z function
 
-def sim_trajectory(a0, da0, dt, n):
+    X,Y = np.meshgrid(X,Y)
+    return X,Y,Z,Zf
+
+
+class Trajectory:
+    def __init__(self, A, DA, dt):
+        self.A = A
+        self.DA = DA
+        self.dt = dt
+    def __len__(self):
+        return len(self.A)
+
+def get_traj(X, Y, Zf, a0, da0, dt, n):
     def F(X):
         return np.array([
             X[1],
-            float(Z_interpolated(X[0]%(2*math.pi), X[1]))
+            float(Zf(X[0]%(2*math.pi), X[1]))
         ])
     Xs = [np.array([a0, da0])]
     for i in range(n):
@@ -56,10 +61,11 @@ def sim_trajectory(a0, da0, dt, n):
             Xs[-1]+dt/6*(k1+2*k2+2*k3+k4)
         )
     Xs = np.array(Xs)
-    return Xs[:,0],Xs[:,1]
+    return Trajectory(Xs[:,0],Xs[:,1],dt)
 
-def plot_trajectory(a0, da0, dt, n):
-    A, DA = sim_trajectory(a0,da0,dt,n)
+@np.vectorize
+def plot_traj(traj):
+    A, DA = traj.A, traj.DA
     period = 2*math.pi
     A_coll = [[A[0]]]
     DA_coll = [[DA[0]]]
@@ -93,8 +99,9 @@ def plot_trajectory(a0, da0, dt, n):
     for i in range(len(A_coll)):
         plt.plot(A_coll[i], DA_coll[i], color='red')
 
-def period_traj(a0, dt, n):
-    A, DA = sim_trajectory(a0,0,dt,n)
+@np.vectorize
+def period(traj):
+    A, DA, dt = traj.A, traj.DA, traj.dt
     dai = DA[1]
     for i, da in enumerate(DA):
         if da*dai < 0:
@@ -107,9 +114,9 @@ def get_first_zero(A,offset):
             return i
     return None
 
-def delta_e(a0,dt,n):
-    A, DA = sim_trajectory(a0,0,dt,n)
-
+@np.vectorize
+def delta_e(traj):
+    A, DA = traj.A, traj.DA
     i1 = get_first_zero(A,0)
     if i1 is None:
         return i1
