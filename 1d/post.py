@@ -105,7 +105,7 @@ def period(traj):
     dai = DA[1]
     for i, da in enumerate(DA):
         if da*dai < 0:
-            return 2*dt*i
+            return 2.*dt*i
     return None
 
 def get_first_zero(A,offset):
@@ -142,14 +142,12 @@ def delta_a(traj):
     if T is None: return None
     i_demi_T = int(T/traj.dt/2)
     A = traj.A
-    print('[', A[0] ,']')
     M,m = np.argmax(A[:2*i_demi_T]), np.argmin(A[:2*i_demi_T])
     a1 = (A[M]-A[m])/2
     M,m = np.argmax(A[i_demi_T:3*i_demi_T])+i_demi_T, np.argmin(A[i_demi_T:3*i_demi_T])+i_demi_T
-    print(1, A[M], A[m], M, m, a1)
-    M,m = np.argmax(A[i_demi_T:3*i_demi_T])+i_demi_T, np.argmin(A[i_demi_T:3*i_demi_T])+i_demi_T
     a2 = (A[M]-A[m])/2
-    print(2, A[M], A[m], M, m, a2)
+    if (a2-a1)/a1 > .1:
+        return None
     return 2*(a2-a1)
 
 if __name__ == "__main__":

@@ -2,14 +2,14 @@ from post import *
 import multiprocessing as mp
 import matplotlib.pyplot as plt
 
-angles =  np.linspace(0,2*math.pi,50)[1:]
+angles =  np.linspace(0,math.pi,50)[1:]
 
 X,Y,Z,Zf = load_res('/home/titus/res_temp', 0, 3)
 
 with mp.Pool(4) as p:
     trajs = p.starmap(
         get_traj,
-        [(X,Y,Zf,a0, 0, 25, 1600) for a0 in angles]
+        [(X,Y,Zf,a0, 0, 25, 2000) for a0 in angles]
     )
 
 plt.pcolor(X,Y,Z)
