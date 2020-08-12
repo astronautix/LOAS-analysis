@@ -15,7 +15,6 @@ def show(mesh, Qs = None):
     elif type(Qs) != list:
         Qs = [Qs]
     bounds = np.array(mesh.bounds)
-    mesh.apply_translation(-(bounds[0] + bounds[1])/2)
     mesh.apply_scale(1/np.linalg.norm(mesh.extents)) # auto resize
     satellite = vp.compound([
         vp.triangle(

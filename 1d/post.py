@@ -137,22 +137,23 @@ def delta_e(traj):
     return DE/E
 
 @np.vectorize
-def delta_a0(traj):
-    A, DA = traj.A, traj.DA
-    i1 = get_first_zero(DA,0)
-    print(1,i1)
-    if i1 is None:
-        return i1
-    i2 = get_first_zero(DA,i1+1)
-    print(2,i2)
-    if i2 is None:
-        return i2
-    if DA[i2+1]*DA[i1+1] < 0: # not a period but a semi period
-        i2 = get_first_zero(DA,i2+1) #we go to the next semi-period
-        print(3,i2)
-        if i2 is None:
-            return None
-    if DA[i2+1]*DA[i1+1] < 0: #if did not succeed
-        return None
-    Da0 = A[i2]-A[i1]
-    return Da0
+def delta_a(traj):
+    T = period(traj)[()]
+    if T is None: return None
+    i_demi_T = int(T/traj.dt/2)
+    A = traj.A
+    print('[', A[0] ,']')
+    M,m = np.argmax(A[:2*i_demi_T]), np.argmin(A[:2*i_demi_T])
+    a1 = (A[M]-A[m])/2
+    M,m = np.argmax(A[i_demi_T:3*i_demi_T])+i_demi_T, np.argmin(A[i_demi_T:3*i_demi_T])+i_demi_T
+    print(1, A[M], A[m], M, m, a1)
+    M,m = np.argmax(A[i_demi_T:3*i_demi_T])+i_demi_T, np.argmin(A[i_demi_T:3*i_demi_T])+i_demi_T
+    a2 = (A[M]-A[m])/2
+    print(2, A[M], A[m], M, m, a2)
+    return 2*(a2-a1)
+
+if __name__ == "__main__":
+    import pickle
+    angles =  np.linspace(0,math.pi,50)[1:]
+    with open('res_perso/crocus_traj_y', 'rb') as f:
+        trajs = pickle.load(f)
