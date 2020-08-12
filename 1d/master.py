@@ -4,7 +4,7 @@ import numpy as np
 import subprocess
 import shutil
 
-ws = np.linspace(-0.005,0.005,100)
+ws = np.linspace(-0.0025,0.0025,100)
 shutil.rmtree('res_temp', ignore_errors=True)
 os.mkdir('res_temp')
 with open('../si.txt', 'r') as si:
