@@ -26,15 +26,38 @@ def load_res(path, axis, sigma = 3):
 
     Z_temp.sort()
 
-    X = np.linspace(0,2*math.pi,100)
+    X = np.linspace(0,2*math.pi,len(Z_temp[0][1]))
     Y = np.array([i[0] for i in Z_temp])
+    X,Y = np.meshgrid(X,Y)
+
     Z = np.array([i[1] for i in Z_temp])
     Z = scipy.ndimage.gaussian_filter(Z,sigma) #Z smoothed
-    Zf = scipy.interpolate.interp2d(X,Y,Z) #Z function
 
-    X,Y = np.meshgrid(X,Y)
-    return X,Y,Z,Zf
+    return X,Y,Z
 
+def interp(X,Y,A):
+    return scipy.interpolate.interp2d(X[0,:],Y[:,0],A)
+
+def getE(X,Y,Z):
+    """Energy matrix derived from the torque"""
+    E = np.zeros(Z.shape)
+    for i in range(1, Z.shape[1]):
+        dx = X[0,i] - X[0,i-1]
+        E[:,i] = (E[:,i-1] - (Z[:,i]+Z[:,i-1])/2*dx)
+    return E
+
+def getF(X,Y,Zf):
+    """Friction coefficient"""
+    F = np.zeros(X.shape)
+    for i in range(F.shape[0]):
+        for j in range(F.shape[1]):
+            x = X[0,j]
+            y = Y[i,0]
+            if y  == 0:
+                F[i,j] = math.nan
+            else:
+                F[i,j] = (Zf(x, y) - Zf(x, 0))/y
+    return F
 
 class Trajectory:
     def __init__(self, A, DA, dt):

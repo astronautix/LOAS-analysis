@@ -2,9 +2,10 @@ from post import *
 import multiprocessing as mp
 import matplotlib.pyplot as plt
 
-angles =  np.linspace(0,math.pi,50)[1:]
+angles =  np.linspace(0,2*math.pi,50)[1:]
 
-X,Y,Z,Zf = load_res('/home/titus/res_temp', 0, 3)
+X,Y,Z = load_res('res/6/data', 0, 3)
+Zf = intep(X,Y,Z)
 
 with mp.Pool(4) as p:
     trajs = p.starmap(
